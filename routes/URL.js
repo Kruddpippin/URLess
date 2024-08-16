@@ -33,14 +33,13 @@ function generateShortURL(originalURL, customID = null) {
 }
 
 function generateUniqueID() {
-	return crypto.randomBytes(4).toString("hex"); // Generates a 8-character hexadecimal string
+	return crypto.randomBytes(4).toString("hex"); // Generates an 8-character hexadecimal string
 }
 
 // GET all shortened URLs
 URLRouter.get("/", async (req, res) => {
 	try {
-		console.log(1);
-		const urls = await URLModel.find(); // Changed from URL to URLModel
+		const urls = await URLModel.find();
 		res.status(200).json(urls);
 	} catch (error) {
 		console.log(error);
@@ -53,8 +52,7 @@ URLRouter.post("/", URLValidationMW, async (req, res) => {
 	const { original } = req.body;
 
 	try {
-		const shortURL = new URLModel.create({ original }); // Changed from URL to URLModel
-		await shortURL.save();
+		const shortURL = await URLModel.create({ original });
 		res.status(201).json(shortURL);
 	} catch (error) {
 		console.log(error);
@@ -65,7 +63,7 @@ URLRouter.post("/", URLValidationMW, async (req, res) => {
 // DELETE a shortened URL by ID
 URLRouter.delete("/:id", async (req, res) => {
 	try {
-		const url = await URLModel.findByIdAndDelete(req.params.id); // Changed from URL to URLModel
+		const url = await URLModel.findByIdAndDelete(req.params.id);
 		if (!url) {
 			return res.status(404).json({ message: "URL not found" });
 		}
@@ -78,7 +76,7 @@ URLRouter.delete("/:id", async (req, res) => {
 // GET a shortened URL by ID
 URLRouter.get("/:id", async (req, res) => {
 	try {
-		const url = await URLModel.findById(req.params.id); // Changed from URL to URLModel
+		const url = await URLModel.findById(req.params.id);
 		if (!url) {
 			return res.status(404).json({ message: "URL not found" });
 		}
