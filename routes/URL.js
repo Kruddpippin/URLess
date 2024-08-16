@@ -5,8 +5,30 @@ const URLModel = require('../models/URLs');
 const URLRouter = express.Router();
 
 // A simple function to generate a short ID (if not provided)
-function generateShortID() {
-    return Math.random().toString(36).substr(2, 8);
+const crypto = require('crypto');
+
+function generateShortURL(originalURL, customID = null) {
+    // Validate the original URL
+    if (typeof originalURL !== 'string' || originalURL.length < 10) {
+        return 'Original URL must be a string of at least 10 characters';
+    }
+
+    // Check if a custom ID is provided and validate it
+    if (customID && (typeof customID !== 'string' || customID.length < 3 || customID.length > 15)) {
+        return 'Custom ID must be a string between 3 and 15 characters';
+    }
+
+    // Generate a short URL using a custom ID or a unique hash
+    const shortURL = customID ? customID : generateUniqueID();
+
+    return {
+        original: originalURL,
+        short: shortURL,
+    };
+}
+
+function generateUniqueID() {
+    return crypto.randomBytes(4).toString('hex'); // Generates a 8-character hexadecimal string
 }
 
 // GET all shortened URLs
@@ -21,12 +43,12 @@ URLRouter.get('/', async (req, res) => {
 
 // POST a new shortened URL
 URLRouter.post('/', URLValidationMW, async (req, res) => {
-    const { original, customID } = req.body;
+    const { original } = req.body;
     
     try {
-        const newURL = new URLModel({ original, short: customID || generateShortID() });  // Changed from URL to URLModel
+        const shortURL = new URLModel({ original});  // Changed from URL to URLModel
         await newURL.save();
-        res.status(201).json(newURL);
+        res.status(201).json(shortURL);
     } catch (error) {
         res.status(400).json({ message: 'Bad Request', error });
     }
