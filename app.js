@@ -17,6 +17,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 app.use('/api/v1/URL', URLRouter);
+app.use('/api/v1/URL/:id', URLRouter);
 
 app.get('/', (req, res) => {
     res.send('Hello URLess');
