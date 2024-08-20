@@ -1,5 +1,5 @@
 const express = require("express");
-const URLValidationMW = require("../validators/URL.validator");
+const {AddURLValidationMW, UpdateURLValidationMW} = require("../validators/URL.validator");
 const URLModel = require("../models/URLs");
 
 const URLRouter = express.Router();
@@ -32,14 +32,24 @@ function generateShortURL(originalURL, customID = null) {
 	};
 }
 
-function generateUniqueID() {
-	return crypto.randomBytes(4).toString("hex"); // Generates an 8-character hexadecimal string
+function generateShortURL(originalURL, customID = null) {
+    if (typeof originalURL !== "string" || originalURL.length < 10) {
+        throw new Error('Original URL must be a string of at least 10 characters');
+    }
+
+    const shortURL = customID ? customID : generateUniqueID();
+    return {
+        original: originalURL,
+        short: shortURL,
+    };
 }
+
 
 // GET all shortened URLs
 URLRouter.get("/", async (req, res) => {
 	try {
-		const urls = await URLModel.find();
+		console.log(1);
+		const urls = await URLModel.find(); // Changed from URL to URLModel
 		res.status(200).json(urls);
 	} catch (error) {
 		console.log(error);
@@ -48,22 +58,37 @@ URLRouter.get("/", async (req, res) => {
 });
 
 // POST a new shortened URL
-URLRouter.post("/", URLValidationMW, async (req, res) => {
-	const { original } = req.body;
+URLRouter.post('/', AddURLValidationMW, async (req, res) => {
+    const { original, customID } = req.body;
 
-	try {
-		const shortURL = await URLModel.create({ original });
-		res.status(201).json(shortURL);
-	} catch (error) {
-		console.log(error);
-		res.status(400).json({ message: "Bad Request", error });
-	}
+    try {
+        // Generate the short URL data (using custom ID if provided)
+        const shortURLData = generateShortURL(original, customID);
+
+        // Assign the generated short URL to the request body
+        req.body.short = shortURLData.short;
+
+        // Create a new URLModel instance with the full payload (original and short URLs)
+        const newURL = new URLModel(req.body);
+
+        // Save the new URL to the database
+        await newURL.save();
+
+        // Respond with the saved URL data
+        res.status(201).json(newURL);
+    } catch (error) {
+        console.log(error);
+        res.status(400).json({ message: "Bad Request", error: error.message });
+    }
 });
+
+
+
 
 // DELETE a shortened URL by ID
 URLRouter.delete("/:id", async (req, res) => {
 	try {
-		const url = await URLModel.findByIdAndDelete(req.params.id);
+		const url = await URLModel.findByIdAndDelete(req.params.id); // Changed from URL to URLModel
 		if (!url) {
 			return res.status(404).json({ message: "URL not found" });
 		}
@@ -76,7 +101,7 @@ URLRouter.delete("/:id", async (req, res) => {
 // GET a shortened URL by ID
 URLRouter.get("/:id", async (req, res) => {
 	try {
-		const url = await URLModel.findById(req.params.id);
+		const url = await URLModel.findById(req.params.id); // Changed from URL to URLModel
 		if (!url) {
 			return res.status(404).json({ message: "URL not found" });
 		}
@@ -85,5 +110,21 @@ URLRouter.get("/:id", async (req, res) => {
 		res.status(500).json({ message: "Server Error", error });
 	}
 });
+
+// GET a shortened URL by ID
+URLRouter.put("/:id", UpdateURLValidationMW, async (req, res) => {
+	try {
+		const id = await URLModel.findById(req.params.id);
+        const url = req.body; // Changed from URL to URLModel
+		if (!url) {
+			return res.status(404).json({ message: "URL not found" });
+		}
+		res.status(200).json(url);
+	} catch (error) {
+		res.status(500).json({ message: "Server Error", error });
+	}
+});
+
+
 
 module.exports = URLRouter;
