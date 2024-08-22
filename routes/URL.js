@@ -1,7 +1,7 @@
 const express = require("express");
 const URLValidationMW = require("../validators/URL.validator");
 const URLModel = require("../models/URLs");
-const shortUrlService = require('./shortUrlService/shortUrlService');
+
 
 const URLRouter = express.Router();
 
