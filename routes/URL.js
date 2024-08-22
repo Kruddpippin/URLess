@@ -1,6 +1,7 @@
 const express = require("express");
 const URLValidationMW = require("../validators/URL.validator");
 const URLModel = require("../models/URLs");
+const shortUrlService = require('./shortUrlService/shortUrlService');
 
 const URLRouter = express.Router();
 
@@ -48,18 +49,16 @@ URLRouter.get("/", async (req, res) => {
 });
 
 // POST a new shortened URL
-URLRouter.post("/", URLValidationMW, async (req, res) => {
-	const { original } = req.body;
-
-	try {
-		const shortURL = await URLModel.create({ original });
-		res.status(201).json(shortURL);
-	} catch (error) {
-		console.log(error);
-		res.status(400).json({ message: "Bad Request", error });
-	}
-});
-
+URLRouter.post('/shorten', URLValidationMW, (req, res) => {
+	const originalURL = req.body.originalURL;
+	shortUrlService.generateAndSaveShortURL(originalURL)
+	  .then((shortURL) => {
+		res.json({ shortURL });
+	  })
+	  .catch((err) => {
+		res.status(500).json({ error: 'Failed to generate short URL' });
+	  });
+  });
 // DELETE a shortened URL by ID
 URLRouter.delete("/:id", async (req, res) => {
 	try {
