@@ -7,18 +7,13 @@ const AddURLSchema = Joi.object({
         .max(5000)
         .trim(),
     short: Joi.string() // Allow updating the short URL
-        .required()
+        .optional()
         .min(4)
         .max(30)
         .trim(),
     customID: Joi.string()
         .optional()
         .min(2)
-        .max(30)
-        .trim(),
-        short: Joi.string() 
-        .optional() // Should be optional because it is generated server-side
-        .min(4)
         .max(30)
         .trim(),
     createdAt: Joi.date()

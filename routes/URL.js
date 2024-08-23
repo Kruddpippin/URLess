@@ -57,7 +57,7 @@ URLRouter.post('/', AddURLValidationMW, async (req, res) => {
         const shortURLData = generateShortURL(original, customID);
 
         // Assign the generated short URL to the request body
-        req.body.short = shortURLData.short;
+        req.body.shortUrl = shortURLData.short;
 
         // Create a new URLModel instance with the full payload (original and short URLs)
         const newURL = new URLModel(req.body);
