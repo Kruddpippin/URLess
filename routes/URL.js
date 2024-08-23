@@ -1,5 +1,5 @@
 const express = require("express");
-const URLValidationMW = require("../validators/URL.validator");
+const {AddURLValidationMW, UpdateURLValidationMW} = require("../validators/URL.validator");
 const URLModel = require("../models/URLs");
 
 
@@ -49,16 +49,33 @@ URLRouter.get("/", async (req, res) => {
 });
 
 // POST a new shortened URL
-URLRouter.post('/shorten', URLValidationMW, (req, res) => {
-	const originalURL = req.body.originalURL;
-	shortUrlService.generateAndSaveShortURL(originalURL)
-	  .then((shortURL) => {
-		res.json({ shortURL });
-	  })
-	  .catch((err) => {
-		res.status(500).json({ error: 'Failed to generate short URL' });
-	  });
-  });
+URLRouter.post('/', AddURLValidationMW, async (req, res) => {
+    const { original, customID } = req.body;
+
+    try {
+        // Generate the short URL data (using custom ID if provided)
+        const shortURLData = generateShortURL(original, customID);
+
+        // Assign the generated short URL to the request body
+        req.body.short = shortURLData.short;
+
+        // Create a new URLModel instance with the full payload (original and short URLs)
+        const newURL = new URLModel(req.body);
+
+        // Save the new URL to the database
+        await newURL.save();
+
+        // Respond with the saved URL data
+        res.status(201).json(newURL);
+    } catch (error) {
+        console.log(error);
+        res.status(400).json({ message: "Bad Request", error: error.message });
+    }
+});
+
+
+
+
 // DELETE a shortened URL by ID
 URLRouter.delete("/:id", async (req, res) => {
 	try {
