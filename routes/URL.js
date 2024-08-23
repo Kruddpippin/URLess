@@ -75,6 +75,21 @@ URLRouter.post('/', AddURLValidationMW, async (req, res) => {
 
 
 
+// UPDATE a shortened URL by ID
+URLRouter.patch("/:id", async (req, res) => {
+	try {
+		const url = await URLModel.findByIdAndUpdate (req.params.id);
+		if (!url) {
+			return res.status(404).json({ message: "URL not found" });
+		}
+		res.status(200).json({ message: "URL updated successfully" });
+	} catch (error) {
+		res.status(500).json({ message: "Server Error", error });
+	}
+});
+
+
+
 
 // DELETE a shortened URL by ID
 URLRouter.delete("/:id", async (req, res) => {

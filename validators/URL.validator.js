@@ -6,6 +6,11 @@ const AddURLSchema = Joi.object({
         .min(5) 
         .max(5000)
         .trim(),
+    short: Joi.string() // Allow updating the short URL
+        .required()
+        .min(4)
+        .max(30)
+        .trim(),
     customID: Joi.string()
         .optional()
         .min(2)
