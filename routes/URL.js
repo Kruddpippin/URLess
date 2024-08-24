@@ -6,6 +6,9 @@ const URLModel = require("../models/URLs");
 const URLRouter = express.Router();
 
 // A simple function to generate a short ID (if not provided)
+function generateUniqueID() {
+	return crypto.randomBytes(4).toString("hex"); // Generates an 8-character hexadecimal string
+}
 const crypto = require("crypto");
 
 function generateShortURL(originalURL, customID = null) {
@@ -25,7 +28,7 @@ function generateShortURL(originalURL, customID = null) {
 	}
 
 	// Generate a short URL using a custom ID or a unique hash
-	const shortURL = original ? customID : generateUniqueID();
+	const shortURL = URLModel.original ? customID : generateUniqueID();
 
 	return {
 		original: originalURL,
@@ -33,9 +36,7 @@ function generateShortURL(originalURL, customID = null) {
 	};
 }
 
-function generateUniqueID() {
-	return crypto.randomBytes(4).toString("hex"); // Generates an 8-character hexadecimal string
-}
+
 
 // GET all shortened URLs
 URLRouter.get("/", async (req, res) => {
@@ -57,7 +58,7 @@ URLRouter.post('/', AddURLValidationMW, async (req, res) => {
         const shortURLData = generateShortURL(original, customID);
 
         // Assign the generated short URL to the request body
-        req.body.shortUrl = shortURLData.short;
+        req.body.shortUrl = shortURLData.shortUrl;
 
         // Create a new URLModel instance with the full payload (original and short URLs)
         const newURL = new URLModel(req.body);
