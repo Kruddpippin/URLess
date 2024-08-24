@@ -107,13 +107,13 @@ URLRouter.delete("/:id", async (req, res) => {
 // GET a shortened URL by ID
 URLRouter.get("/:id", async (req, res) => {
 	try {
-		const url = await URLModel.findById(req.params.id);
+		const url = await URLModel.findOne({shortURl: req.params.id});
 		if (!url) {
 			return res.status(404).json({ message: "URL not found" });
 		}
-		res.status(200).json(url);
+		return res.redirect (url.original);
 	} catch (error) {
-		res.status(500).json({ message: "Server Error", error });
+		return res.status(500).json({ message: "Server Error", error });
 	}
 });
 
