@@ -25,7 +25,7 @@ function generateShortURL(originalURL, customID = null) {
 	}
 
 	// Generate a short URL using a custom ID or a unique hash
-	const shortURL = customID ? customID : generateUniqueID();
+	const shortURL = original ? customID : generateUniqueID();
 
 	return {
 		original: originalURL,
